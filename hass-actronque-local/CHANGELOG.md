@@ -1,5 +1,41 @@
 # Changelog
 
+## 2026.10.4
+
+- Fix 2026.10.3 selective-state publication errors caused by the production UI bridge still using the old no-argument method signature and a removed numeric publishing hook.
+- Restore the overridable value formatting/validation hook and retain sensor percentage sanitisation.
+- Extend selective dependency mapping to UI zone climate modes/actions and live compressor/fan changes so the actual climate action stays correct.
+- Add end-to-end regression coverage against the actual `ActronQueLocalBridge` used by the running add-on, including initial snapshots, zone controls, action updates and numeric formatting.
+
+## 2026.10.3
+
+- Process only the MQTT entities affected by incoming WallLink `Data_Change` paths, including linked climate actions, target temperatures, zone enabled states and individual sensors.
+- Avoid repeated whole-state deep copies during normal state publication; only snapshot the complete state when raw diagnostics are explicitly enabled.
+- Skip zone discovery comparisons for ordinary telemetry, but detect zone structure, sensor membership and sensor battery-availability changes.
+- Preserve full initialisation, `Data_All` and MQTT reconnect synchronisation; retain the established MQTT deduplication and native C WallLink decoder.
+- Add regression tests covering selective updates, dependent topic mapping, full refreshes, sensor discovery and unknown structural updates; validate mode-dependent zone targets during partial updates.
+
+## 2026.10.2
+
+- Replace the high-CPU Python bitwise WallLink stream-cipher loop with an optimised native C implementation using precise 32-bit unsigned arithmetic; Python retains Base64 framing, padding checks and JSON parsing.
+- Accelerate both received frame decryption and outgoing command encryption, with the original Python cipher automatically used if the native shared library cannot load.
+- Compile the shared library for the selected CPU architecture in the add-on Docker image (amd64 and aarch64), without a compiler in the runtime image.
+- Run a compatibility test suite as part of image builds: native/Python parity on varied binary frames, encrypt/decrypt round trips, fallback and malformed-message handling.
+- No changes to MQTT entities, connection behaviour, sampling frequency or temperature control.
+
+## 2026.10.1
+
+- Default verbose WallLink `Data_Change` logging and full raw MQTT state publication to off; keep normal INFO-level operational logging enabled. Existing saved add-on options are not overwritten.
+
+- Fix single-temperature Auto targets snapping back: shift the existing heat/cool band together around the requested midpoint (thanks to @dragonspy00 for identifying the issue in PR #52).
+- Preserve independent Heat-only and Cool-only setpoint writes, and support both whole-system and per-zone Auto targets.
+- Clamp Auto-mode band shifts to the configured 10–32°C control range while preserving the existing deadband; refuse updates when the existing band is unavailable or invalid instead of requesting equal setpoints.
+- Reduce ongoing CPU and MQTT traffic by suppressing unchanged retained `/state` publications from the QUE WallLink bridge, including per-zone and sensor state.
+- Keep change events, availability messages, MQTT discovery and commands unaffected by state deduplication.
+- Clear the retained-state comparison cache on MQTT disconnect/reconnect and republish the full current state on reconnection.
+- Cache only publications accepted by the MQTT client for QoS 1 delivery; unsuccessful publish attempts remain eligible for retry.
+
+
 ## 2026.9.3
 
 - Fix Home Assistant climate action reporting so a QUE system that is on but not actively heating or cooling reports **Idle** rather than inheriting a stale compressor mode.

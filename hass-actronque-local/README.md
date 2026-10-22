@@ -127,7 +127,24 @@ Changing this option keeps the same climate entity IDs, but Home Assistant autom
 - `setup_retry_delay` — delay between setup retries while waiting for physical steps.
 - `separate_heat_cool_targets` — `false` (default) for one target temperature; `true` for independent heating and cooling targets.
 - `topic_prefix` — internal MQTT topic prefix.
-- `publish_raw_state` — publishes the full current QUE state for diagnostics.
+- `publish_raw_state` — publishes the full current QUE state for diagnostics (off by default).
+- `log_data_changes` — logs incoming WallLink `Data_Change` details (off by default).
+
+## Selective state updates
+
+From 2026.10.3, incoming WallLink changes refresh only MQTT topics affected by
+those specific paths (including dependent climate modes/targets and zone states).
+Complete state and discovery synchronisation still occurs on initial connection,
+full controller snapshots and MQTT reconnect. Native encryption and MQTT retained
+state caching remain unchanged.
+
+## Native WallLink acceleration
+
+The add-on compiles a small native C stream-cipher library for AMD64 and ARM64.
+It uses 32-bit unsigned state registers for exact protocol compatibility.
+The existing Python cipher remains an automatic fallback if the native library
+cannot be loaded. Base64 framing, JSON and control logic remain in Python.
+Native/Python parity and malformed-frame tests run during the Docker image build.
 
 ## MQTT diagnostics
 
